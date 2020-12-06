@@ -22,6 +22,11 @@ source-repository head
 
 common common-options
   build-depends:       base ^>= 4.13.0.0
+                     , req ^>= 3.8.0
+                     , aeson ^>= 1.5.4.1
+                     , html-parse ^>= 0.2.0.2
+                     , text ^>= 1.2.4.0
+
   
   ghc-options:         -Wall
                        -Wcompat
