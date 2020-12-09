@@ -16,6 +16,9 @@ import Text.HTML.Tree
 import Options.Applicative
 import CmdLine
 
+import Paths_was_supervision (version)
+import Data.Version (showVersion)
+
 changeJVMParameters :: CmdOptions -> IO ()
 changeJVMParameters opts = runReq defaultHttpConfig $ do
   firstPage <- req

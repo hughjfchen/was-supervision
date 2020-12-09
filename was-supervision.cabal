@@ -51,12 +51,13 @@ library
   import:              common-options
   hs-source-dirs:      src
   exposed-modules:     WasSupervision
-                     , CmdLine
 
 executable was-supervision
   import:              common-options
   hs-source-dirs:      app
   main-is:             Main.hs
+  other-modules:       Paths_was_supervision
+                     , CmdLine
   build-depends:       was-supervision
   ghc-options:         -threaded
                        -rtsopts
