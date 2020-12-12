@@ -1,20 +1,21 @@
 -- | This module parse the command line for the parameters
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module CmdLine
 ( cmdOptions
- , CmdOptions(..)
  )
 where
 
-import Data.Text
 import Options.Applicative
 
-data CmdOptions = CmdOptions { cmdHost :: Text
-                             , cmdPort :: Int
-                             , cmdUserName :: Text
-                             , cmdPassword :: Text
-                             } deriving stock (Show)
+import Paths_was_supervision (version)
+import Data.Version (showVersion)
+
+import Types (CmdOptions(..))
+
+versionOptionParser :: Parser (a -> a)
+versionOptionParser = infoOption (showVersion version) (long "version" <> short 'v' <> help "Show version")
 
 cmdOptionsParser :: Parser CmdOptions
 cmdOptionsParser = CmdOptions
@@ -22,11 +23,15 @@ cmdOptionsParser = CmdOptions
                ( long "host"
                <> short 'm'
                <> metavar "HOST"
+               <> value "localhost"
+               <> showDefault
                <> help "The hostname/IP/DNS name of the websphere dmgr."))
   <*> (option auto
                ( long "port"
                <> short 'p'
                <> metavar "PORT"
+               <> value 9060
+               <> showDefault
                <> help "The port number of the websphere dmgr."))
   <*> (strOption
                ( long "username"
@@ -40,7 +45,7 @@ cmdOptionsParser = CmdOptions
               <> help "The password for access to the websphere admin console."))
 
 cmdOptions :: ParserInfo CmdOptions
-cmdOptions = info (cmdOptionsParser <**> helper)
+cmdOptions = info (cmdOptionsParser <**> helper <**> versionOptionParser)
                 ( fullDesc
                 <> progDesc "Config websphere admin console via command line."
-                <> header "was-supervision - config websphere via command linve.")
+                <> header ("was-supervision " <> showVersion version <> " - config websphere via command line."))

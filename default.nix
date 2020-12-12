@@ -31,13 +31,14 @@ rec {
         name = "was-supervision";
         src = ./.;
       };
+      index-state = "2020-12-02T00:00:00Z";
       compiler-nix-name = haskellCompiler;
       # 'ghc' option is deprecated
       #ghc = pkgs.buildPackages.pkgs.haskell-nix.compiler.${haskellCompiler};
       modules = [
         { packages.was-supervision.dontStrip = false; }
       ];
-    });
+  });
 
   was-supervision-exe = was-supervision.was-supervision.components.exes.was-supervision;
 
