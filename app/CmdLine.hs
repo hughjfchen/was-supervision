@@ -19,30 +19,30 @@ versionOptionParser = infoOption (showVersion version) (long "version" <> short 
 
 cmdOptionsParser :: Parser CmdOptions
 cmdOptionsParser = CmdOptions
-  <$> (strOption
+  <$> strOption
                ( long "host"
                <> short 'm'
                <> metavar "HOST"
                <> value "localhost"
                <> showDefault
-               <> help "The hostname/IP/DNS name of the websphere dmgr."))
-  <*> (option auto
+               <> help "The hostname/IP/DNS name of the websphere dmgr.")
+  <*> option auto
                ( long "port"
                <> short 'p'
                <> metavar "PORT"
                <> value 9060
                <> showDefault
-               <> help "The port number of the websphere dmgr."))
-  <*> (strOption
+               <> help "The port number of the websphere dmgr.")
+  <*> strOption
                ( long "username"
                <> short 'u'
                <> metavar "USERNAME"
-               <> help "The username for access to the websphere admin console."))
-  <*> (strOption
+               <> help "The username for access to the websphere admin console.")
+  <*> strOption
               ( long "password"
               <> short 'w'
               <> metavar "PASSWORD"
-              <> help "The password for access to the websphere admin console."))
+              <> help "The password for access to the websphere admin console.")
 
 cmdOptions :: ParserInfo CmdOptions
 cmdOptions = info (cmdOptionsParser <**> helper <**> versionOptionParser)
