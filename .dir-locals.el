@@ -1,1 +1,1 @@
-((nil . ((dante-target . "exe:was-supervision"))))
+((nil . ((dante-target . "test:was-supervision-test"))))
