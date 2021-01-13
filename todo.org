@@ -1,0 +1,7 @@
+* Inbox
+** TODO Write some property based tests with hspec-hedgehog
+
+[[file:~/Desktop/projects/was-supervision/test/Spec.hs::import Types]]
+** TODO Use hspec-hedgehog to write some property based tests
+
+[[file:~/Desktop/projects/was-supervision/test/Spec.hs][file:~/Desktop/projects/was-supervision/test/Spec.hs]]
