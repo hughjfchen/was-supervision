@@ -22,11 +22,13 @@ source-repository head
 
 common common-options
   build-depends:       base ^>= 4.13.0.0
+                     , http-client
                      , req ^>= 3.8.0
                      , aeson ^>= 1.5.4.1
                      , html-parse ^>= 0.2.0.2
                      , text ^>= 1.2.4.0
                      , bytestring ^>= 0.10.10.1
+                     , mtl
 
   ghc-options:         -Wall
                        -Wcompat
@@ -48,8 +50,11 @@ common common-options
 library
   import:              common-options
   hs-source-dirs:      src
-  exposed-modules:     WasSupervision
-                     , Types
+  exposed-modules:     Core.Types
+                     , Core.WasSupervision
+                     , Env
+                     , Capability.CookieJar
+                     , Capability.ExeWASAdminCommand
 
 executable was-supervision
   import:              common-options
@@ -57,6 +62,9 @@ executable was-supervision
   main-is:             Main.hs
   other-modules:       Paths_was_supervision
                      , CmdLine
+                     , AppM
+                     , Capability.CookieJar
+                     , Capability.ExeWASAdminCommand
   build-depends:       was-supervision
                      , optparse-applicative ^>= 0.16.1.0
   ghc-options:         -threaded

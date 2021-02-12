@@ -3,7 +3,7 @@
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Types(
+module Core.Types(
   CmdOptions(..)
   , SwitchName(..)
   , Switch(..)

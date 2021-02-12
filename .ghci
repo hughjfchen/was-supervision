@@ -1,0 +1,3 @@
+:def hg \x -> return $ ":!hoogle \"" ++ x ++ "\""
+:def hgi \x -> return $ ":!hoogle --info \"" ++ x ++ "\""
+:def hgr \x -> return $ ":!lynx -dump -dont_wrap_pre -with_backspaces -nolist -nonumbers  \"" ++ "https://hoogle.haskell.org/?hoogle=" ++ x ++ "\""

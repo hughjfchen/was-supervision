@@ -44,3 +44,9 @@ main = hspec $
         _ -> propertyCmd === "-D" <> propertyName <> "=" <> propertyValue
 
 -- >>> main
+-- test jvm generic command line
+--   test property with hedgehog - switch
+--   test property with hedgehog - option
+--   test property with hedgehog - property
+-- Finished in 0.0364 seconds
+-- 3 examples, 0 failures
