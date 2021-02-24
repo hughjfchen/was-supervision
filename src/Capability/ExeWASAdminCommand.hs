@@ -8,17 +8,19 @@ module Capability.ExeWASAdminCommand
   , JVMM
   , welcome
   , login
-  , list
-  , pick
+  , listServers
+  , pickServer
+  , pickJvm
   , updateJvmGenericParameter
   , WelcomeState(..)
   , AuthState(..)
+  , JVMUpdateState(..)
   ) where
 
 import Data.Text
-import Data.ByteString
 
 import Env
+import Core.Types (JVMCmdLine)
 import Capability.CookieJar (MyCookieJar)
 
 type UserName = Text
@@ -32,13 +34,44 @@ data AuthState = UserNameEmpty
                 | UserAlreadyLogined UserName
                 | Authed MyCookieJar
 
+type CellName = Text
+type NodeName = Text
+type ServerName = Text
+type CellID = Text
+type NodeID = Text
+type ServerID = Text
+
+data Server = Server { cellName :: CellName
+                     , cellID :: CellID
+                     , nodeName :: NodeName
+                     , nodeID :: NodeID
+                     , serverName :: ServerName
+                     , serverID :: ServerID
+                     }
+
+type JVMID = Text
+type JVMName = Text
+
+data JVM = JVM { jvmName :: JVMName
+               , jvmID :: JVMID
+               }
+
+data JVMUpdateState = Success JVM
+                    | AlreadyContained JVM
+                    | UndeterminableResult JVM
+
 class (Monad m) => AuthM m where
-  welcome :: Config -> m WelcomeState
-  login :: Config -> m AuthState
+  welcome :: ConnectionInfo -> m WelcomeState
+  login :: ConnectionInfo -> AuthInfo -> WelcomeState -> m AuthState
 
 class (AuthM m) => ServerM m where
-  list :: Config -> m ByteString
-  pick :: Config -> ByteString -> m ByteString
+  listServers :: ConnectionInfo -> AuthState -> m [Server]
+  pickServer :: ConnectionInfo -> AuthState -> Server -> m Server
 
 class (ServerM m) => JVMM m where
-  updateJvmGenericParameter :: Config -> ByteString -> m ByteString
+  pickJvm :: ConnectionInfo -> AuthState -> Server -> m JVM
+  updateJvmGenericParameter :: ConnectionInfo
+                            -> AuthState
+                            -> JVM
+                            -> JVMCmdLine
+                            -> m JVMUpdateState

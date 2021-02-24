@@ -1,1 +1,1 @@
-((nil . ((dante-target . "test:was-supervision-test"))))
+((nil . ((ghcid-test-command . "main"))))

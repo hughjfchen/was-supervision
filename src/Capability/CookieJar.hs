@@ -22,8 +22,3 @@ class ReadCookieJarM m => RWCookieJarM m where
   setCookieJar :: CookieJar -> m CookieJar
   emptyCookieJar :: m CookieJar
   mergeCookieJar :: CookieJar -> CookieJar -> m CookieJar
-
--- >>> :hgr IORef a
--- Can't Access `https://hoogle.haskell.org/?hoogle=IORef%20a'
--- Alert!: Unable to access document.
--- lynx: Can't access startfile

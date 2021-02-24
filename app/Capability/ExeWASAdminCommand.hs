@@ -1,8 +1,11 @@
--- | This module define specs for executing WAS admin commands
+-- | This module implements the capability specified within the library src tree
+-- for executing WAS admin commands
 
 module Capability.ExeWASAdminCommand where
 
 import Env
+import Capability.CookieJar
+import Capability.ExeWASAdminCommand
 
 class Monad m => AuthM m where
   welcome :: (HasConfig m, Monad m) => m CookieJar

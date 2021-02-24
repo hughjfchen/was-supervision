@@ -14,16 +14,17 @@ import Data.Text
 data ConnectionInfo = ConnectionInfo {
   ciHost :: !Text
   , ciPort :: !Int
-                                     }
+  }
 
 data AuthInfo = AuthInfo {
   aiAdminUser :: !Text
   , aiAdminPassword :: !Text
-                         }
+  }
 
-data Env = Env { envConnectionInfo :: ConnectionInfo
-                  , envAuthInfo :: AuthInfo
-                  }
+data Env = Env {
+  envConnectionInfo :: ConnectionInfo
+  , envAuthInfo :: AuthInfo
+  }
 
 class HasConnectionInfo a where
   getConnectionInfo :: a -> ConnectionInfo

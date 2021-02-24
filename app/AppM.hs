@@ -1,51 +1,38 @@
 -- | This module parse the command line for the parameters
 {-# LANGUAGE DerivingStrategies #-}
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
-module CmdLine
-( cmdOptions
+module AppM
+( AppM(..)
  )
 where
 
-import Options.Applicative
+import Control.Monad.Reader (ReaderT, MonadReader)
+import Control.Monad.IO.Class (MonadIO)
 
-import Paths_was_supervision (version)
-import Data.Version (showVersion)
+import Data.Typeable
 
-import Types (CmdOptions(..))
+newtype AppM err env a = AppM { unAppM :: ReaderT env IO a }
+                        deriving newtype (Functor, Applicative, Monad
+                                        , MonadFail, MonadReader env
+                                        , MonadIO)
 
-versionOptionParser :: Parser (a -> a)
-versionOptionParser = infoOption (showVersion version) (long "version" <> short 'v' <> help "Show version")
+{- | Run application by providing environment.
+Throws 'AppException' if application has unhandled 'throwError'. Use
+'runAppAsIO' to handle exceptions as well.
+-}
+runApp :: env -> AppM err env a -> IO a
+runApp env = usingReaderT env . unApp
+{-# INLINE runApp #-}
 
-cmdOptionsParser :: Parser CmdOptions
-cmdOptionsParser = CmdOptions
-  <$> strOption
-               ( long "host"
-               <> short 'm'
-               <> metavar "HOST"
-               <> value "localhost"
-               <> showDefault
-               <> help "The hostname/IP/DNS name of the websphere dmgr.")
-  <*> option auto
-               ( long "port"
-               <> short 'p'
-               <> metavar "PORT"
-               <> value 9060
-               <> showDefault
-               <> help "The port number of the websphere dmgr.")
-  <*> strOption
-               ( long "username"
-               <> short 'u'
-               <> metavar "USERNAME"
-               <> help "The username for access to the websphere admin console.")
-  <*> strOption
-              ( long "password"
-              <> short 'w'
-              <> metavar "PASSWORD"
-              <> help "The password for access to the websphere admin console.")
+{- | Like 'runApp' but also catches 'AppException' and unwraps 'ErrorWithSource'
+from it. Use this function to handle errors outside 'App' monad.
+-}
+runAppAsIO
+    :: (Show err, Typeable err)
+    => env
+    -> AppM err env a
+    -> IO (Either (ErrorWithSource err) a)
+runAppAsIO env = firstF unAppException . try . runApp env
+{-# INLINE runAppAsIO #-}
 
-cmdOptions :: ParserInfo CmdOptions
-cmdOptions = info (cmdOptionsParser <**> helper <**> versionOptionParser)
-                ( fullDesc
-                <> progDesc "Config websphere admin console via command line."
-                <> header ("was-supervision " <> showVersion version <> " - config websphere via command line."))

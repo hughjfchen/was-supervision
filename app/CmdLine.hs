@@ -12,10 +12,11 @@ import Options.Applicative
 import Paths_was_supervision (version)
 import Data.Version (showVersion)
 
-import Types (CmdOptions(..))
+import Core.Types (CmdOptions(..))
 
 versionOptionParser :: Parser (a -> a)
-versionOptionParser = infoOption (showVersion version) (long "version" <> short 'v' <> help "Show version")
+versionOptionParser = infoOption (showVersion version)
+                        (long "version" <> short 'v' <> help "Show version")
 
 cmdOptionsParser :: Parser CmdOptions
 cmdOptionsParser = CmdOptions

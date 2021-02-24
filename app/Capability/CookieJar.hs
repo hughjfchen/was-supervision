@@ -3,7 +3,7 @@
 module Capability.CookieJar where
 
 
-import Network.HttpType
+import Network.HTTP.Client (CookieJar)
 
 newtype CookieJar = CookieJar { unCookieJar :: !(IORef CookieJar) }
 
@@ -14,3 +14,4 @@ class ReadCookieJarM m => RWCookieJarM m where
   setCookieJar :: CookieJar -> m CookieJar
   emptyCookieJar :: m CookieJar
   mergeCookieJar :: CookieJar -> CookieJar -> m CookieJar
+
