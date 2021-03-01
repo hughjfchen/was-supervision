@@ -1,4 +1,3 @@
+:load Prelude
 :def hg \x -> return $ ":!hoogle \"" ++ x ++ "\""
 :def hgi \x -> return $ ":!hoogle --info \"" ++ x ++ "\""
-:set -isrc:test:app:benchmark
-:load test/Spec.hs app/AppM.hs

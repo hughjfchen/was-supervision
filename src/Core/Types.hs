@@ -7,14 +7,13 @@ module Core.Types(
   CmdOptions(..)
   , SwitchName(..)
   , Switch(..)
-  , OptionName(..)
+  , JvmOptionName(..)
   , Option(..)
   , Property(..)
   , JVMCmdLine(..)
   , toJVMCmdLine
             ) where
 
-import Data.Text
 
 data CmdOptions = CmdOptions { cmdHost :: !Text
                              , cmdPort :: !Int
@@ -42,30 +41,30 @@ showSwitch (Switch Xint) = "Xint"
 showSwitch (Switch Xrs) = "Xrs"
 showSwitch (Switch Xnoclassgc) = "Xnoclassgc"
 
-data OptionName = Xms
+data JvmOptionName = Xms
                 | Xmx
                 | Xloggc
                 deriving stock (Show)
-type OptionValue = Text
-data Option = Option OptionName OptionValue deriving stock (Show)
+type JvmOptionValue = Text
+data JvmOption = JvmOption JvmOptionName JvmOptionValue deriving stock (Show)
 
-showOption :: Option -> Text
-showOption (Option Xms v) = "Xms" <> v
-showOption (Option Xmx v) = "Xmx" <> v
-showOption (Option Xloggc v) = "Xloggc:" <> v
+showJvmOption :: JvmOption -> Text
+showJvmOption (JvmOption Xms v) = "Xms" <> v
+showJvmOption (JvmOption Xmx v) = "Xmx" <> v
+showJvmOption (JvmOption Xloggc v) = "Xloggc:" <> v
 
 type PropertyName = Text
 type PropertyValue = Text
 data Property = Property PropertyName PropertyValue
 
 data JVMCmdLine = JVMCmdLineSwitch Switch
-                | JVMCmdLineOption Option
+                | JVMCmdLineJvmOption JvmOption
                 | JVMCmdLineProperty Property
 
 toJVMCmdLine :: JVMCmdLine -> Text
 toJVMCmdLine (JVMCmdLineSwitch s) = "-" <> showSwitch s
-toJVMCmdLine (JVMCmdLineOption (Option _ "")) = ""
-toJVMCmdLine (JVMCmdLineOption o) = "-" <> showOption o
+toJVMCmdLine (JVMCmdLineJvmOption (JvmOption _ "")) = ""
+toJVMCmdLine (JVMCmdLineJvmOption o) = "-" <> showJvmOption o
 
 toJVMCmdLine (JVMCmdLineProperty (Property "" "")) = ""
 toJVMCmdLine (JVMCmdLineProperty (Property "" _)) = ""

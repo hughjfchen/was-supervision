@@ -4,13 +4,15 @@
 
 module AppM
 ( AppM(..)
+  , runApp
+  , runAppAsIO
  )
 where
 
-import Control.Monad.Reader (ReaderT, MonadReader)
-import Control.Monad.IO.Class (MonadIO)
+import Control.Exception (try)
 
-import Data.Typeable
+import Relude.Extra.Bifunctor (firstF)
+import Core.Error
 
 newtype AppM err env a = AppM { unAppM :: ReaderT env IO a }
                         deriving newtype (Functor, Applicative, Monad
@@ -22,7 +24,7 @@ Throws 'AppException' if application has unhandled 'throwError'. Use
 'runAppAsIO' to handle exceptions as well.
 -}
 runApp :: env -> AppM err env a -> IO a
-runApp env = usingReaderT env . unApp
+runApp env = usingReaderT env . unAppM
 {-# INLINE runApp #-}
 
 {- | Like 'runApp' but also catches 'AppException' and unwraps 'ErrorWithSource'
@@ -35,4 +37,3 @@ runAppAsIO
     -> IO (Either (ErrorWithSource err) a)
 runAppAsIO env = firstF unAppException . try . runApp env
 {-# INLINE runAppAsIO #-}
-

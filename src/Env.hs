@@ -9,7 +9,6 @@ module Env
   , HasAuthInfo(..)
   ) where
 
-import Data.Text
 
 data ConnectionInfo = ConnectionInfo {
   ciHost :: !Text

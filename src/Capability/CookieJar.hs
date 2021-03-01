@@ -10,7 +10,6 @@ module Capability.CookieJar
   , mergeCookieJar
   ) where
 
-import Data.IORef
 import Network.HTTP.Client (CookieJar)
 
 newtype MyCookieJar = MyCookieJar { unMyCookieJar :: IORef CookieJar }

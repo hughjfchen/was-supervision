@@ -6,6 +6,8 @@ module Capability.ExeWASAdminCommand
   ( AuthM
   , ServerM
   , JVMM
+  , Server(..)
+  , JVM(..)
   , welcome
   , login
   , listServers
@@ -17,7 +19,6 @@ module Capability.ExeWASAdminCommand
   , JVMUpdateState(..)
   ) where
 
-import Data.Text
 
 import Env
 import Core.Types (JVMCmdLine)
@@ -75,3 +76,4 @@ class (ServerM m) => JVMM m where
                             -> JVM
                             -> JVMCmdLine
                             -> m JVMUpdateState
+

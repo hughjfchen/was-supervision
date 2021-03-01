@@ -12,8 +12,6 @@ module Core.WasSupervision
        ( changeJVMParameters
        ) where
 
-import Control.Monad.Reader (MonadReader, ask)
-import Control.Monad (forM)
 import Core.Types (JVMCmdLine(..))
 
 import Env
