@@ -27,8 +27,8 @@ common common-options
                      , req ^>= 3.8.0
                      , aeson ^>= 1.5.4.1
                      , html-parse ^>= 0.2.0.2
-                     , text ^>= 1.2.4.0
-                     , bytestring ^>= 0.10.10.1
+                     -- , text ^>= 1.2.4.0
+                     -- , bytestring ^>= 0.10.10.1
                      , mtl
 
   ghc-options:         -Wall
@@ -71,10 +71,10 @@ library
   import:              common-options
   hs-source-dirs:      src
   exposed-modules:     Core.Types
-                     , Core.Error
                      , Core.WasSupervision
                      , Prelude
                      , Env
+                     , Error
                      , Capability.CookieJar
                      , Capability.ExeWASAdminCommand
 
@@ -85,8 +85,8 @@ executable was-supervision
   other-modules:       Paths_was_supervision
                      , CmdLine
                      , AppM
-                     , Capability.CookieJar
-                     , Capability.ExeWASAdminCommand
+                     , AppCapability.CookieJar
+                     , AppCapability.ExeWASAdminCommand
   build-depends:       was-supervision
                      , optparse-applicative ^>= 0.16.1.0
   ghc-options:         -threaded

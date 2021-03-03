@@ -62,16 +62,17 @@ data JVMUpdateState = Success JVM
                     | UndeterminableResult JVM
 
 class (Monad m) => AuthM m where
-  welcome :: ConnectionInfo -> m WelcomeState
-  login :: ConnectionInfo -> AuthInfo -> WelcomeState -> m AuthState
+  welcome :: ConnectionInfo -> MyCookieJar -> m WelcomeState
+  login :: ConnectionInfo -> MyCookieJar -> AuthInfo -> WelcomeState -> m AuthState
 
 class (AuthM m) => ServerM m where
-  listServers :: ConnectionInfo -> AuthState -> m [Server]
-  pickServer :: ConnectionInfo -> AuthState -> Server -> m Server
+  listServers :: ConnectionInfo -> MyCookieJar -> AuthState -> m [Server]
+  pickServer :: ConnectionInfo -> MyCookieJar -> AuthState -> Server -> m Server
 
 class (ServerM m) => JVMM m where
-  pickJvm :: ConnectionInfo -> AuthState -> Server -> m JVM
+  pickJvm :: ConnectionInfo -> MyCookieJar -> AuthState -> Server -> m JVM
   updateJvmGenericParameter :: ConnectionInfo
+                            -> MyCookieJar
                             -> AuthState
                             -> JVM
                             -> JVMCmdLine

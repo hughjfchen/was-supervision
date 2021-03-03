@@ -23,11 +23,12 @@ changeJVMParameters :: (MonadReader env m, HasConnectionInfo env
                     => JVMCmdLine
                     -> m [JVMUpdateState]
 changeJVMParameters jvmCmd = do
+  emptyMyCJ <- emptyCookieJar
   env <- ask
   let cInfo = getConnectionInfo env
       aInfo = getAuthInfo env
-  authed <- welcome cInfo >>= login cInfo aInfo
-  servers <- listServers cInfo authed
-  forM servers $ updateTheJVM cInfo authed
-  where updateTheJVM c a s = pickServer c a s >>= pickJvm c a
-          >>= \j -> updateJvmGenericParameter c a j jvmCmd
+  authed <- welcome cInfo emptyMyCJ >>= login cInfo emptyMyCJ aInfo
+  servers <- listServers cInfo emptyMyCJ authed
+  forM servers $ updateTheJVM cInfo emptyMyCJ authed
+  where updateTheJVM c a cj s = pickServer c a cj s >>= pickJvm c a cj
+          >>= \j -> updateJvmGenericParameter c a cj j jvmCmd

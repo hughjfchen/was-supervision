@@ -37,7 +37,7 @@ Then, after specializing 'WithError' you can throw and catch pure errors that
 also have source code position attached to them automatically.
 -}
 
-module Core.Error
+module Error
        ( -- * Pure errors handling
          WithError
        , ErrorWithSource (..)
