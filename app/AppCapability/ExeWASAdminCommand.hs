@@ -9,8 +9,10 @@ module AppCapability.ExeWASAdminCommand
   , updateJvmGenericParameter
   ) where
 
-import Env
+import Has
+import Core.MyHas
 import Error
+import Core.MyError
 
 import Capability.CookieJar
 import Capability.ExeWASAdminCommand
@@ -20,8 +22,28 @@ import AppM
 import Network.HTTP.Req
 
 instance AuthM (AppM err env) where
-  welcome = undefined
-  login = undefined
+  welcome = do
+    connInfo <- grab @ConnectionInfo
+    mycj <- grab @MyCookieJar
+    r <- req GET
+      (http (ciHost connInfo) /: (toText $ ciPort connInfo) /: "/ibm/console")
+      NoReqBody
+      bsResponse
+      mempty
+    flip mergeCookieJar mycj $ responseCookieJar r
+
+  login = do
+    connInfo <- grab @ConnectionInfo
+    mycj <- grab @MyCookieJar
+    authInfo <- grab @AuthInfo
+    r <- req POST
+      (http (ciHost connInfo) /: (toText $ ciPort connInfo) /: "/ibm/console")
+      NoReqBody
+      bsResponse
+      mempty
+    flip mergeCookieJar mycj $ responseCookieJar r
+
+  logout = undefined
 
 instance ServerM (AppM err env) where
   listServers = undefined

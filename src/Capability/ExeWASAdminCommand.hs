@@ -10,6 +10,7 @@ module Capability.ExeWASAdminCommand
   , JVM(..)
   , welcome
   , login
+  , logout
   , listServers
   , pickServer
   , pickJvm
@@ -20,20 +21,17 @@ module Capability.ExeWASAdminCommand
   ) where
 
 
-import Env
+import Has
+import Core.MyHas
+import Error
+import Core.MyError
+
 import Core.Types (JVMCmdLine)
-import Capability.CookieJar (MyCookieJar)
 
 type UserName = Text
-data WelcomeState = NotSecure MyCookieJar
-                  | Secure MyCookieJar
-                  | Unknown MyCookieJar
+newtype WelcomeState = Landed Text
 
-data AuthState = UserNameEmpty
-                | PasswordEmpty UserName
-                | PasswordNotMatch UserName
-                | UserAlreadyLogined UserName
-                | Authed MyCookieJar
+newtype AuthState = Authed UserName
 
 type CellName = Text
 type NodeName = Text
@@ -57,24 +55,21 @@ data JVM = JVM { jvmName :: JVMName
                , jvmID :: JVMID
                }
 
-data JVMUpdateState = Success JVM
-                    | AlreadyContained JVM
-                    | UndeterminableResult JVM
+newtype JVMUpdateState = Success JVM
 
 class (Monad m) => AuthM m where
-  welcome :: ConnectionInfo -> MyCookieJar -> m WelcomeState
-  login :: ConnectionInfo -> MyCookieJar -> AuthInfo -> WelcomeState -> m AuthState
+  welcome :: (WithError MyError m, MonadReader env m, Has ConnectionInfo env, Has MyCookieJar env) => m ()
+  login :: (WithError MyError m, MonadReader env m, Has ConnectionInfo env, Has AuthInfo env, Has MyCookieJar env) => m ()
+  logout :: (WithError MyError m, MonadReader env m, Has ConnectionInfo env, Has MyCookieJar env) => m ()
 
 class (AuthM m) => ServerM m where
-  listServers :: ConnectionInfo -> MyCookieJar -> AuthState -> m [Server]
-  pickServer :: ConnectionInfo -> MyCookieJar -> AuthState -> Server -> m Server
+  listServers :: (MonadReader env m, Has ConnectionInfo env, Has MyCookieJar env) => m [Server]
+  pickServer :: (MonadReader env m, Has ConnectionInfo env, Has MyCookieJar env) => Server -> m Server
 
 class (ServerM m) => JVMM m where
-  pickJvm :: ConnectionInfo -> MyCookieJar -> AuthState -> Server -> m JVM
-  updateJvmGenericParameter :: ConnectionInfo
-                            -> MyCookieJar
-                            -> AuthState
-                            -> JVM
+  pickJvm :: (MonadReader env m, Has ConnectionInfo env, Has MyCookieJar env) => Server -> m JVM
+  updateJvmGenericParameter :: (WithError err m, MonadReader env m, Has ConnectionInfo env, Has MyCookieJar env) =>
+                            JVM
                             -> JVMCmdLine
                             -> m JVMUpdateState
 

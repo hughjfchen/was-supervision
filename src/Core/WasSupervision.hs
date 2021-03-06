@@ -5,8 +5,6 @@ Maintainer: Hugh JF Chen <hugh.jf.chen@gmail.com>
 
 Take the provision of a WebSphere cell.
 -}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE FlexibleContexts #-}
 
 module Core.WasSupervision
        ( changeJVMParameters
@@ -14,21 +12,15 @@ module Core.WasSupervision
 
 import Core.Types (JVMCmdLine(..))
 
-import Env
-import Capability.CookieJar
+import Has
+import Core.MyHas
+import Error
+import Core.MyError
 import Capability.ExeWASAdminCommand
 
-changeJVMParameters :: (MonadReader env m, HasConnectionInfo env
-                       , HasAuthInfo env, JVMM m, RWCookieJarM m)
+changeJVMParameters :: (WithError MyError m, MonadReader env m
+                       , Has ConnectionInfo env, Has AuthInfo env, JVMM m, Has MyCookieJar env)
                     => JVMCmdLine
                     -> m [JVMUpdateState]
-changeJVMParameters jvmCmd = do
-  emptyMyCJ <- emptyCookieJar
-  env <- ask
-  let cInfo = getConnectionInfo env
-      aInfo = getAuthInfo env
-  authed <- welcome cInfo emptyMyCJ >>= login cInfo emptyMyCJ aInfo
-  servers <- listServers cInfo emptyMyCJ authed
-  forM servers $ updateTheJVM cInfo emptyMyCJ authed
-  where updateTheJVM c a cj s = pickServer c a cj s >>= pickJvm c a cj
-          >>= \j -> updateJvmGenericParameter c a cj j jvmCmd
+changeJVMParameters jvmCmd = welcome >> login >> listServers >>= changeAllJvmPara
+  where changeAllJvmPara = mapM  (\y -> pickServer y >>= pickJvm >>= flip updateJvmGenericParameter jvmCmd)

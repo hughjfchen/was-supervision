@@ -71,11 +71,13 @@ library
   import:              common-options
   hs-source-dirs:      src
   exposed-modules:     Core.Types
+                     , Core.MyError
+                     , Core.MyHas
+                     , Core.MyCookieJar
                      , Core.WasSupervision
                      , Prelude
-                     , Env
+                     , Has
                      , Error
-                     , Capability.CookieJar
                      , Capability.ExeWASAdminCommand
 
 executable was-supervision
@@ -85,7 +87,6 @@ executable was-supervision
   other-modules:       Paths_was_supervision
                      , CmdLine
                      , AppM
-                     , AppCapability.CookieJar
                      , AppCapability.ExeWASAdminCommand
   build-depends:       was-supervision
                      , optparse-applicative ^>= 0.16.1.0
