@@ -16,6 +16,7 @@ import Has
 import Core.MyHas
 import Error
 import Core.MyError
+import Core.MyCookieJar
 import Capability.ExeWASAdminCommand
 
 changeJVMParameters :: (WithError MyError m, MonadReader env m

@@ -26,6 +26,8 @@ import Core.MyHas
 import Error
 import Core.MyError
 
+import Core.MyCookieJar (MyCookieJar(..))
+
 import Core.Types (JVMCmdLine)
 
 type UserName = Text

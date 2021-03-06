@@ -14,24 +14,26 @@ import Core.MyHas
 import Error
 import Core.MyError
 
-import Capability.CookieJar
+import Core.MyCookieJar (MyCookieJar(..), mergeCookieJar)
+
 import Capability.ExeWASAdminCommand
 
 import AppM
 
 import Network.HTTP.Req
 
-instance AuthM (AppM err env) where
+instance MonadHttp (AppM err env)
+
+instance AuthM (AppM err Env) where
   welcome = do
     connInfo <- grab @ConnectionInfo
     mycj <- grab @MyCookieJar
     r <- req GET
-      (http (ciHost connInfo) /: (toText $ ciPort connInfo) /: "/ibm/console")
+      (http (ciHost connInfo) /: (toText $ show $ ciPort connInfo) /: "/ibm/console")
       NoReqBody
       bsResponse
       mempty
     flip mergeCookieJar mycj $ responseCookieJar r
-
   login = do
     connInfo <- grab @ConnectionInfo
     mycj <- grab @MyCookieJar
@@ -45,11 +47,11 @@ instance AuthM (AppM err env) where
 
   logout = undefined
 
-instance ServerM (AppM err env) where
+instance ServerM (AppM err Env) where
   listServers = undefined
   pickServer = undefined
 
-instance JVMM (AppM err env) where
+instance JVMM (AppM err Env) where
   updateJvmGenericParameter = undefined
 
 -- >>> :browse Network.HTTP.Req-- (/:) :: Url scheme -> Text -> Url scheme

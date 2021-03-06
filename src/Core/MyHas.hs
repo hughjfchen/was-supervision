@@ -6,13 +6,12 @@
 module Core.MyHas
 ( ConnectionInfo(..)
   , AuthInfo(..)
-  , MyCookieJar(..)
   , Env(..)
   ) where
 
 import Has
 
-import Network.HTTP.Client (CookieJar)
+import Core.MyCookieJar
 
 data ConnectionInfo = ConnectionInfo {
   ciHost :: !Text
@@ -24,11 +23,23 @@ data AuthInfo = AuthInfo {
   , aiAdminPassword :: !Text
   }
 
-newtype MyCookieJar = MyCookieJar { unMyCookieJar :: IORef CookieJar }
-
 data Env = Env {
   envConnectionInfo :: ConnectionInfo
   , envAuthInfo :: AuthInfo
   , envMyCookieJar :: MyCookieJar
-  } deriving (Has ConnectionInfo) via Field "envConnectionInfo" Env
+  }
+    deriving (Has ConnectionInfo) via Field "envConnectionInfo" Env
     deriving (Has AuthInfo) via Field "envAuthInfo" Env
+    deriving (Has MyCookieJar) via Field "envMyCookieJar" Env
+
+-- instance Has ConnectionInfo Env where
+--   obtain :: Env -> ConnectionInfo
+--   obtain = envConnectionInfo
+
+-- instance Has AuthInfo Env where
+--   obtain :: Env -> AuthInfo
+--   obtain = envAuthInfo
+
+-- instance Has MyCookieJar Env where
+--   obtain :: Env -> MyCookieJar
+--   obtain = envMyCookieJar
