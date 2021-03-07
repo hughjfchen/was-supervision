@@ -15,16 +15,19 @@ import Error
 import Core.MyError
 
 import Core.MyCookieJar (MyCookieJar(..), mergeCookieJar)
+import Core.ConnectionInfo (ConnectionInfo(..))
+import Core.AuthInfo(AuthInfo(..))
 
 import Capability.ExeWASAdminCommand
 
 import AppM
+import AppEnv
 
 import Network.HTTP.Req
 
 instance MonadHttp (AppM err env)
 
-instance AuthM (AppM err Env) where
+instance AuthM AppM where
   welcome = do
     connInfo <- grab @ConnectionInfo
     mycj <- grab @MyCookieJar
@@ -47,11 +50,11 @@ instance AuthM (AppM err Env) where
 
   logout = undefined
 
-instance ServerM (AppM err Env) where
+instance ServerM AppM where
   listServers = undefined
   pickServer = undefined
 
-instance JVMM (AppM err Env) where
+instance JVMM AppM where
   updateJvmGenericParameter = undefined
 
 -- >>> :browse Network.HTTP.Req-- (/:) :: Url scheme -> Text -> Url scheme

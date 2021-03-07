@@ -22,7 +22,8 @@ module Capability.ExeWASAdminCommand
 
 
 import Has
-import Core.MyHas
+import Core.ConnectionInfo (ConnectionInfo(..))
+import Core.AuthInfo (AuthInfo(..))
 import Error
 import Core.MyError
 

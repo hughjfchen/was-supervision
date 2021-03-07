@@ -74,10 +74,13 @@ library
                      , Core.MyError
                      , Core.MyHas
                      , Core.MyCookieJar
+                     , Core.ConnectionInfo
+                     , Core.AuthInfo
                      , Core.WasSupervision
                      , Prelude
                      , Has
                      , Error
+                     , MonadStack
                      , Capability.ExeWASAdminCommand
 
 executable was-supervision
@@ -87,6 +90,7 @@ executable was-supervision
   other-modules:       Paths_was_supervision
                      , CmdLine
                      , AppM
+                     , AppEnv
                      , AppCapability.ExeWASAdminCommand
   build-depends:       was-supervision
                      , optparse-applicative ^>= 0.16.1.0

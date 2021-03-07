@@ -13,10 +13,11 @@ module Core.WasSupervision
 import Core.Types (JVMCmdLine(..))
 
 import Has
-import Core.MyHas
 import Error
 import Core.MyError
 import Core.MyCookieJar
+import Core.ConnectionInfo
+import Core.AuthInfo
 import Capability.ExeWASAdminCommand
 
 changeJVMParameters :: (WithError MyError m, MonadReader env m
