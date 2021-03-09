@@ -78,6 +78,7 @@ library
                      , Core.WasSupervision
                      , Prelude
                      , Has
+                     , As
                      , Error
                      , MonadStack
                      , Capability.ExeWASAdminCommand
@@ -90,6 +91,7 @@ executable was-supervision
                      , CmdLine
                      , AppM
                      , AppEnv
+                     , AppError
                      , AppCapability.ExeWASAdminCommand
   build-depends:       was-supervision
                      , optparse-applicative ^>= 0.16.1.0

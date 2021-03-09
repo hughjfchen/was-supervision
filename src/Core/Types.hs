@@ -1,11 +1,7 @@
--- | This module defines types which shared by lib and exe
-
-{-# LANGUAGE DerivingStrategies #-}
-{-# LANGUAGE OverloadedStrings #-}
+-- | This module defines the core domain types which shared by lib and exe
 
 module Core.Types(
-  CmdOptions(..)
-  , SwitchName(..)
+  SwitchName(..)
   , Switch(..)
   , JvmOptionName(..)
   , Option(..)
@@ -14,12 +10,6 @@ module Core.Types(
   , toJVMCmdLine
             ) where
 
-
-data CmdOptions = CmdOptions { cmdHost :: !Text
-                             , cmdPort :: !Int
-                             , cmdUserName :: !Text
-                             , cmdPassword :: !Text
-                             } deriving stock (Show)
 
 data SwitchName = VerboseGC
                 | VerboseClass

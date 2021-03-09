@@ -7,12 +7,12 @@ module AppM
   )
 where
 
-import Core.MyError
 import MonadStack
 
 import AppEnv
+import AppError
 
-type AppM = MonadStack MyError AppEnv
+type AppM = MonadStack AppError AppEnv
 
 runAppM :: AppEnv -> AppM a -> IO a
 runAppM = runMonadStack

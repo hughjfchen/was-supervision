@@ -1,11 +1,10 @@
--- | This module defines the application related business errors.
+-- | This module defines the core domain related business errors.
 
 module Core.MyError
 ( MyError(..)
   ) where
 
-data MyError = GeneralError Text
-              | NotSecure Text
+data MyError = NotSecure Text
               | NotFound Text
               | UserNameEmpty
               | PasswordEmpty Text

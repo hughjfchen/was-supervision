@@ -12,7 +12,7 @@ module AppCapability.ExeWASAdminCommand
 
 import Has
 import Error
-import Core.MyError
+import AppError
 
 import Core.MyCookieJar (MyCookieJar(..), mergeCookieJar)
 import Core.ConnectionInfo (ConnectionInfo(..))
@@ -26,9 +26,9 @@ import Network.HTTP.Req
 import qualified Network.HTTP.Client as HC
 
 instance MonadHttp AppM where
-  handleHttpException (VanillaHttpException (HC.InvalidUrlException url reason)) = throwError $ GeneralError $ toText (url <> reason)
-  handleHttpException (VanillaHttpException (HC.HttpExceptionRequest _ _)) = throwError $ GeneralError "http client error"
-  handleHttpException (JsonHttpException errMsg) = throwError $ GeneralError $ toText $ "Parsing JSON error: " <> errMsg
+  handleHttpException (VanillaHttpException (HC.InvalidUrlException url reason)) = throwError $ AppInvalidUrlError $ toText (url <> reason)
+  handleHttpException (VanillaHttpException (HC.HttpExceptionRequest _ _)) = throwError $ AppHttpError "http client error"
+  handleHttpException (JsonHttpException errMsg) = throwError $ AppHttpError $ toText $ "Parsing JSON error: " <> errMsg
 
 instance AuthM AppM where
   welcome = do

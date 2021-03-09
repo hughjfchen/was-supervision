@@ -1,4 +1,4 @@
-{- |
+{- | This module is the core business logic
 Copyright: (c) 2020 Hugh JF Chen
 SPDX-License-Identifier: MIT
 Maintainer: Hugh JF Chen <hugh.jf.chen@gmail.com>
@@ -13,6 +13,7 @@ module Core.WasSupervision
 import Core.Types (JVMCmdLine(..))
 
 import Has
+import As
 import Error
 import Core.MyError
 import Core.MyCookieJar
@@ -20,7 +21,7 @@ import Core.ConnectionInfo
 import Core.AuthInfo
 import Capability.ExeWASAdminCommand
 
-changeJVMParameters :: (WithError MyError m, MonadReader env m
+changeJVMParameters :: (WithError err m, As err MyError, MonadReader env m
                        , Has ConnectionInfo env, Has AuthInfo env, JVMM m, Has MyCookieJar env)
                     => JVMCmdLine
                     -> m [JVMUpdateState]

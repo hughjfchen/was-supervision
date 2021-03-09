@@ -22,6 +22,7 @@ module Capability.ExeWASAdminCommand
 
 
 import Has
+import As
 import Core.ConnectionInfo (ConnectionInfo(..))
 import Core.AuthInfo (AuthInfo(..))
 import Error
@@ -61,9 +62,9 @@ data JVM = JVM { jvmName :: JVMName
 newtype JVMUpdateState = Success JVM
 
 class (Monad m) => AuthM m where
-  welcome :: (WithError MyError m, MonadReader env m, Has ConnectionInfo env, Has MyCookieJar env) => m ()
-  login :: (WithError MyError m, MonadReader env m, Has ConnectionInfo env, Has AuthInfo env, Has MyCookieJar env) => m ()
-  logout :: (WithError MyError m, MonadReader env m, Has ConnectionInfo env, Has MyCookieJar env) => m ()
+  welcome :: (WithError err m, As err MyError, MonadReader env m, Has ConnectionInfo env, Has MyCookieJar env) => m ()
+  login :: (WithError err m, As err MyError, MonadReader env m, Has ConnectionInfo env, Has AuthInfo env, Has MyCookieJar env) => m ()
+  logout :: (WithError err m, As err MyError, MonadReader env m, Has ConnectionInfo env, Has MyCookieJar env) => m ()
 
 class (AuthM m) => ServerM m where
   listServers :: (MonadReader env m, Has ConnectionInfo env, Has MyCookieJar env) => m [Server]
@@ -71,7 +72,7 @@ class (AuthM m) => ServerM m where
 
 class (ServerM m) => JVMM m where
   pickJvm :: (MonadReader env m, Has ConnectionInfo env, Has MyCookieJar env) => Server -> m JVM
-  updateJvmGenericParameter :: (WithError err m, MonadReader env m, Has ConnectionInfo env, Has MyCookieJar env) =>
+  updateJvmGenericParameter :: (WithError err m, As err MyError, MonadReader env m, Has ConnectionInfo env, Has MyCookieJar env) =>
                             JVM
                             -> JVMCmdLine
                             -> m JVMUpdateState
