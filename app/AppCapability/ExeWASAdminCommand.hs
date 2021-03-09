@@ -7,10 +7,10 @@ module AppCapability.ExeWASAdminCommand
   , listServers
   , pickServer
   , updateJvmGenericParameter
+  , pickJvm
   ) where
 
 import Has
-import Core.MyHas
 import Error
 import Core.MyError
 
@@ -21,18 +21,21 @@ import Core.AuthInfo(AuthInfo(..))
 import Capability.ExeWASAdminCommand
 
 import AppM
-import AppEnv
 
 import Network.HTTP.Req
+import qualified Network.HTTP.Client as HC
 
-instance MonadHttp (AppM err env)
+instance MonadHttp AppM where
+  handleHttpException (VanillaHttpException (HC.InvalidUrlException url reason)) = throwError $ GeneralError $ toText (url <> reason)
+  handleHttpException (VanillaHttpException (HC.HttpExceptionRequest _ _)) = throwError $ GeneralError "http client error"
+  handleHttpException (JsonHttpException errMsg) = throwError $ GeneralError $ toText $ "Parsing JSON error: " <> errMsg
 
 instance AuthM AppM where
   welcome = do
     connInfo <- grab @ConnectionInfo
     mycj <- grab @MyCookieJar
     r <- req GET
-      (http (ciHost connInfo) /: (toText $ show $ ciPort connInfo) /: "/ibm/console")
+      (http (ciHost connInfo) /: (show $ ciPort connInfo) /: "/ibm/console")
       NoReqBody
       bsResponse
       mempty
@@ -42,13 +45,20 @@ instance AuthM AppM where
     mycj <- grab @MyCookieJar
     authInfo <- grab @AuthInfo
     r <- req POST
-      (http (ciHost connInfo) /: (toText $ ciPort connInfo) /: "/ibm/console")
+      (http (ciHost connInfo) /: (show $ ciPort connInfo) /: "/ibm/console")
       NoReqBody
       bsResponse
       mempty
     flip mergeCookieJar mycj $ responseCookieJar r
-
-  logout = undefined
+  logout = do
+    connInfo <- grab @ConnectionInfo
+    mycj <- grab @MyCookieJar
+    r <- req GET
+      (http (ciHost connInfo) /: (show $ ciPort connInfo) /: "/logout")
+      NoReqBody
+      bsResponse
+      mempty
+    flip mergeCookieJar mycj $ responseCookieJar r
 
 instance ServerM AppM where
   listServers = undefined
@@ -56,8 +66,10 @@ instance ServerM AppM where
 
 instance JVMM AppM where
   updateJvmGenericParameter = undefined
+  pickJvm = undefined
 
--- >>> :browse Network.HTTP.Req-- (/:) :: Url scheme -> Text -> Url scheme
+-- >>> :browse Network.HTTP.Req
+-- (/:) :: Url scheme -> Text -> Url scheme
 -- (/~) ::
 --   http-api-data-0.4.2:Web.Internal.HttpApiData.ToHttpApiData a =>
 --   Url scheme -> a -> Url scheme
@@ -66,8 +78,7 @@ instance JVMM AppM where
 --    http-api-data-0.4.2:Web.Internal.HttpApiData.ToHttpApiData a) =>
 --   Text -> a -> param
 -- newtype BsResponse
---   = Network.HTTP.Req.BsResponse (http-client-0.7.3:Network.HTTP.Client.Types.Response
---                                    ByteString)
+--   = Network.HTTP.Req.BsResponse (Response ByteString)
 -- data CONNECT = CONNECT
 -- data CanHaveBody = CanHaveBody | NoBody
 -- data DELETE = DELETE
@@ -76,8 +87,7 @@ instance JVMM AppM where
 -- data GET = GET
 -- data HEAD = HEAD
 -- class HttpBody body where
---   getRequestBody :: body
---                     -> http-client-0.7.3:Network.HTTP.Client.Types.RequestBody
+--   getRequestBody :: body -> RequestBody
 --   getRequestContentType :: body -> Maybe ByteString
 --   {-# MINIMAL getRequestBody #-}
 -- type family HttpBodyAllowed (allowsBody :: CanHaveBody)
@@ -87,54 +97,44 @@ instance JVMM AppM where
 --     HttpBodyAllowed 'CanHaveBody body = () :: Constraint
 --     HttpBodyAllowed 'NoBody 'CanHaveBody = (TypeError ...)
 -- data HttpConfig
---   = HttpConfig {httpConfigProxy :: Maybe
---                                      http-client-0.7.3:Network.HTTP.Client.Types.Proxy,
+--   = HttpConfig {httpConfigProxy :: Maybe Network.HTTP.Client.Proxy,
 --                 httpConfigRedirectCount :: Int,
---                 httpConfigAltManager :: Maybe
---                                           http-client-0.7.3:Network.HTTP.Client.Types.Manager,
+--                 httpConfigAltManager :: Maybe Manager,
 --                 httpConfigCheckResponse :: forall b.
---                                            http-client-0.7.3:Network.HTTP.Client.Types.Request
---                                            -> http-client-0.7.3:Network.HTTP.Client.Types.Response b
+--                                            Request
+--                                            -> Response b
 --                                            -> ByteString
---                                            -> Maybe
---                                                 http-client-0.7.3:Network.HTTP.Client.Types.HttpExceptionContent,
+--                                            -> Maybe HttpExceptionContent,
 --                 httpConfigRetryPolicy :: retry-0.8.1.2:Control.Retry.RetryPolicyM
 --                                            IO,
 --                 httpConfigRetryJudge :: forall b.
 --                                         retry-0.8.1.2:Control.Retry.RetryStatus
---                                         -> http-client-0.7.3:Network.HTTP.Client.Types.Response b
---                                         -> Bool,
+--                                         -> Response b -> Bool,
 --                 httpConfigRetryJudgeException :: retry-0.8.1.2:Control.Retry.RetryStatus
 --                                                  -> SomeException -> Bool,
 --                 httpConfigBodyPreviewLength :: forall a. Num a => a}
--- data HttpException
---   = VanillaHttpException http-client-0.7.3:Network.HTTP.Client.Types.HttpException
+-- data Network.HTTP.Req.HttpException
+--   = VanillaHttpException Network.HTTP.Client.HttpException
 --   | JsonHttpException String
 -- class HttpMethod a where
 --   type family AllowsBody a :: CanHaveBody
---   httpMethodName :: Proxy a -> ByteString
+--   httpMethodName :: Prelude.Proxy a -> ByteString
 --   {-# MINIMAL httpMethodName #-}
 -- class HttpResponse response where
 --   type family HttpResponseBody response :: *
 --   toVanillaResponse :: response
---                        -> http-client-0.7.3:Network.HTTP.Client.Types.Response
---                             (HttpResponseBody response)
---   getHttpResponse :: http-client-0.7.3:Network.HTTP.Client.Types.Response
---                        http-client-0.7.3:Network.HTTP.Client.Types.BodyReader
---                      -> IO response
---   acceptHeader :: Proxy response -> Maybe ByteString
+--                        -> Response (HttpResponseBody response)
+--   getHttpResponse :: Response BodyReader -> IO response
+--   acceptHeader :: Prelude.Proxy response -> Maybe ByteString
 --   {-# MINIMAL toVanillaResponse, getHttpResponse #-}
 -- newtype IgnoreResponse
---   = Network.HTTP.Req.IgnoreResponse (http-client-0.7.3:Network.HTTP.Client.Types.Response
---                                        ())
--- newtype JsonResponse a
---   = Network.HTTP.Req.JsonResponse (http-client-0.7.3:Network.HTTP.Client.Types.Response
---                                      a)
+--   = Network.HTTP.Req.IgnoreResponse (Response ())
+-- newtype JsonResponse a = Network.HTTP.Req.JsonResponse (Response a)
 -- newtype LbsResponse
---   = Network.HTTP.Req.LbsResponse (http-client-0.7.3:Network.HTTP.Client.Types.Response
+--   = Network.HTTP.Req.LbsResponse (Response
 --                                     bytestring-0.10.10.1:Data.ByteString.Lazy.Internal.ByteString)
 -- class MonadIO m => MonadHttp (m :: * -> *) where
---   handleHttpException :: HttpException -> m a
+--   handleHttpException :: Network.HTTP.Req.HttpException -> m a
 --   getHttpConfig :: m HttpConfig
 --   {-# MINIMAL handleHttpException #-}
 -- data NoReqBody = NoReqBody
@@ -142,11 +142,8 @@ instance JVMM AppM where
 -- type role Network.HTTP.Req.Option phantom
 -- data Network.HTTP.Req.Option (scheme :: Scheme)
 --   = Network.HTTP.Req.Option (Endo
---                                (http-types-0.12.3:Network.HTTP.Types.URI.QueryText,
---                                 http-client-0.7.3:Network.HTTP.Client.Types.Request))
---                             (Maybe
---                                (http-client-0.7.3:Network.HTTP.Client.Types.Request
---                                 -> IO http-client-0.7.3:Network.HTTP.Client.Types.Request))
+--                                (http-types-0.12.3:Network.HTTP.Types.URI.QueryText, Request))
+--                             (Maybe (Request -> IO Request))
 -- data PATCH = PATCH
 -- data POST = POST
 -- data PUT = PUT
@@ -166,34 +163,26 @@ instance JVMM AppM where
 -- newtype ReqBodyLbs
 --   = ReqBodyLbs bytestring-0.10.10.1:Data.ByteString.Lazy.Internal.ByteString
 -- data ReqBodyMultipart
---   = Network.HTTP.Req.ReqBodyMultipart ByteString
---                                       http-client-0.7.3:Network.HTTP.Client.Types.RequestBody
+--   = Network.HTTP.Req.ReqBodyMultipart ByteString RequestBody
 -- newtype ReqBodyUrlEnc = ReqBodyUrlEnc FormUrlEncodedParam
 -- data Scheme = Http | Https
 -- data TRACE = TRACE
 -- type role Url nominal
 -- data Url (scheme :: Scheme)
 --   = Network.HTTP.Req.Url Scheme (NonEmpty Text)
--- attachHeader ::
---   ByteString
---   -> ByteString
---   -> http-client-0.7.3:Network.HTTP.Client.Types.Request
---   -> http-client-0.7.3:Network.HTTP.Client.Types.Request
+-- attachHeader :: ByteString -> ByteString -> Request -> Request
 -- basicAuth ::
 --   ByteString -> ByteString -> Network.HTTP.Req.Option 'Https
 -- basicAuthUnsafe ::
 --   ByteString -> ByteString -> Network.HTTP.Req.Option scheme
 -- basicProxyAuth ::
 --   ByteString -> ByteString -> Network.HTTP.Req.Option scheme
--- bsResponse :: Proxy BsResponse
--- cookieJar ::
---   http-client-0.7.3:Network.HTTP.Client.Types.CookieJar
---   -> Network.HTTP.Req.Option scheme
+-- bsResponse :: Prelude.Proxy BsResponse
+-- Network.HTTP.Req.cookieJar ::
+--   CookieJar -> Network.HTTP.Req.Option scheme
 -- customAuth ::
---   (http-client-0.7.3:Network.HTTP.Client.Types.Request
---    -> IO http-client-0.7.3:Network.HTTP.Client.Types.Request)
---   -> Network.HTTP.Req.Option scheme
--- decompress ::
+--   (Request -> IO Request) -> Network.HTTP.Req.Option scheme
+-- Network.HTTP.Req.decompress ::
 --   (ByteString -> Bool) -> Network.HTTP.Req.Option scheme
 -- defaultHttpConfig :: HttpConfig
 -- header ::
@@ -201,9 +190,9 @@ instance JVMM AppM where
 -- http :: Text -> Url 'Http
 -- httpVersion :: Int -> Int -> Network.HTTP.Req.Option scheme
 -- https :: Text -> Url 'Https
--- ignoreResponse :: Proxy IgnoreResponse
--- jsonResponse :: Proxy (JsonResponse a)
--- lbsResponse :: Proxy LbsResponse
+-- ignoreResponse :: Prelude.Proxy IgnoreResponse
+-- jsonResponse :: Prelude.Proxy (JsonResponse a)
+-- lbsResponse :: Prelude.Proxy LbsResponse
 -- oAuth1 ::
 --   ByteString
 --   -> ByteString
@@ -212,7 +201,7 @@ instance JVMM AppM where
 --   -> Network.HTTP.Req.Option scheme
 -- oAuth2Bearer :: ByteString -> Network.HTTP.Req.Option 'Https
 -- oAuth2Token :: ByteString -> Network.HTTP.Req.Option 'Https
--- port :: Int -> Network.HTTP.Req.Option scheme
+-- Network.HTTP.Req.port :: Int -> Network.HTTP.Req.Option scheme
 -- queryFlag :: QueryParam param => Text -> param
 -- renderUrl :: Url scheme -> Text
 -- req ::
@@ -222,7 +211,7 @@ instance JVMM AppM where
 --   method
 --   -> Url scheme
 --   -> body
---   -> Proxy response
+--   -> Prelude.Proxy response
 --   -> Network.HTTP.Req.Option scheme
 --   -> m response
 -- req' ::
@@ -232,8 +221,7 @@ instance JVMM AppM where
 --   -> Url scheme
 --   -> body
 --   -> Network.HTTP.Req.Option scheme
---   -> (http-client-0.7.3:Network.HTTP.Client.Types.Request
---       -> http-client-0.7.3:Network.HTTP.Client.Types.Manager -> m a)
+--   -> (Request -> Manager -> m a)
 --   -> m a
 -- reqBodyMultipart ::
 --   MonadIO m =>
@@ -245,9 +233,7 @@ instance JVMM AppM where
 --   -> Url scheme
 --   -> body
 --   -> Network.HTTP.Req.Option scheme
---   -> (http-client-0.7.3:Network.HTTP.Client.Types.Response
---         http-client-0.7.3:Network.HTTP.Client.Types.BodyReader
---       -> IO a)
+--   -> (Response BodyReader -> IO a)
 --   -> m a
 -- reqCb ::
 --   (MonadHttp m, HttpMethod method, HttpBody body,
@@ -256,22 +242,21 @@ instance JVMM AppM where
 --   method
 --   -> Url scheme
 --   -> body
---   -> Proxy response
+--   -> Prelude.Proxy response
 --   -> Network.HTTP.Req.Option scheme
---   -> (http-client-0.7.3:Network.HTTP.Client.Types.Request
---       -> m http-client-0.7.3:Network.HTTP.Client.Types.Request)
+--   -> (Request -> m Request)
 --   -> m response
--- responseBody ::
+-- Network.HTTP.Req.responseBody ::
 --   HttpResponse response => response -> HttpResponseBody response
--- responseCookieJar ::
---   HttpResponse response =>
---   response -> http-client-0.7.3:Network.HTTP.Client.Types.CookieJar
+-- Network.HTTP.Req.responseCookieJar ::
+--   HttpResponse response => response -> CookieJar
 -- responseHeader ::
 --   HttpResponse response => response -> ByteString -> Maybe ByteString
 -- responseStatusCode :: HttpResponse response => response -> Int
 -- responseStatusMessage ::
 --   HttpResponse response => response -> ByteString
--- responseTimeout :: Int -> Network.HTTP.Req.Option scheme
+-- Network.HTTP.Req.responseTimeout ::
+--   Int -> Network.HTTP.Req.Option scheme
 -- runReq :: MonadIO m => HttpConfig -> Req a -> m a
 -- urlQ ::
 --   template-haskell-2.15.0.0:Language.Haskell.TH.Quote.QuasiQuoter
@@ -287,6 +272,4 @@ instance JVMM AppM where
 --        (Either
 --           (Url 'Http, Network.HTTP.Req.Option scheme0)
 --           (Url 'Https, Network.HTTP.Req.Option scheme1))
--- withReqManager ::
---   MonadIO m =>
---   (http-client-0.7.3:Network.HTTP.Client.Types.Manager -> m a) -> m a
+-- withReqManager :: MonadIO m => (Manager -> m a) -> m a

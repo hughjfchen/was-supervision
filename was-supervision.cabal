@@ -72,7 +72,6 @@ library
   hs-source-dirs:      src
   exposed-modules:     Core.Types
                      , Core.MyError
-                     , Core.MyHas
                      , Core.MyCookieJar
                      , Core.ConnectionInfo
                      , Core.AuthInfo

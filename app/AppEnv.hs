@@ -1,22 +1,38 @@
 -- | This module define the Env for application
 
+{-# LANGUAGE DerivingVia #-}
+{-# LANGUAGE DataKinds #-}
+
 module AppEnv (
-  mkAppEnv
+  AppEnv(..)
+  , mkAppEnv
   ) where
 
-import Core.MyHas
-import Core.MyCookieJar
 import Core.ConnectionInfo
 import Core.AuthInfo
+import Core.MyCookieJar
+import Has
 
-mkAppEnv :: Env
-mkAppEnv = Env {
-  envConnectionInfo = ConnectionInfo {
-      ciHost = "localhost"
-      , ciPort = 9960                                   }
-  , envAuthInfo = AuthInfo {
-      aiAdminUser = "wasadmin"
-      , aiAdminPassword = "wasadmin"
-                           }
-  , envMyCookieJar = undefined
-               }
+import CmdLine (CmdOptions(..))
+
+data AppEnv = AppEnv {
+  envConnectionInfo :: ConnectionInfo
+  , envAuthInfo :: AuthInfo
+  , envMyCookieJar :: MyCookieJar
+  }
+    deriving (Has ConnectionInfo) via Field "envConnectionInfo" AppEnv
+    deriving (Has AuthInfo) via Field "envAuthInfo" AppEnv
+    deriving (Has MyCookieJar) via Field "envMyCookieJar" AppEnv
+
+
+mkAppEnv :: (MonadIO m) => CmdOptions -> m AppEnv
+mkAppEnv cmdOptions = emptyCookieJar >>= \empCJ -> pure $ AppEnv {
+                                                            envConnectionInfo = ConnectionInfo {
+                                                                ciHost = cmdHost cmdOptions
+                                                                , ciPort = cmdPort cmdOptions }
+                                                            , envAuthInfo = AuthInfo {
+                                                                aiAdminUser = cmdUserName cmdOptions
+                                                                , aiAdminPassword = cmdPassword cmdOptions
+                                                                }
+                                                            , envMyCookieJar = empCJ
+                                                            }

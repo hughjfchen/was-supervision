@@ -2,11 +2,17 @@
 -- general monad stack
 
 module AppM
-  ( AppM )
+  ( AppM
+  , runAppM
+  )
 where
 
 import Core.MyError
-import Core.MyHas
 import MonadStack
 
-type AppM = MonadStack MyError Env
+import AppEnv
+
+type AppM = MonadStack MyError AppEnv
+
+runAppM :: AppEnv -> AppM a -> IO a
+runAppM = runMonadStack

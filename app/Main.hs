@@ -4,7 +4,11 @@ module Main (main) where
 import Options.Applicative
 import CmdLine
 
-import WasSupervision (changeJVMParameters)
+import AppEnv
+import AppM
+import Core.Types (JVMCmdLine(..), Property(..))
+import AppCapability.ExeWASAdminCommand()
+import Core.WasSupervision (changeJVMParameters)
 
 main :: IO ()
-main = execParser cmdOptions >>= changeJVMParameters
+main = void $ execParser cmdOptions >>= mkAppEnv >>= \env -> runAppM env $ changeJVMParameters $ JVMCmdLineProperty $ Property "M" "MM"

@@ -4,7 +4,8 @@ module Core.MyError
 ( MyError(..)
   ) where
 
-data MyError = NotSecure Text
+data MyError = GeneralError Text
+              | NotSecure Text
               | NotFound Text
               | UserNameEmpty
               | PasswordEmpty Text

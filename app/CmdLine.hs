@@ -3,7 +3,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module CmdLine
-( cmdOptions
+( CmdOptions(..)
+  , cmdOptions
  )
 where
 
@@ -12,7 +13,12 @@ import Options.Applicative
 import Paths_was_supervision (version)
 import Data.Version (showVersion)
 
-import Core.Types (CmdOptions(..))
+
+data CmdOptions = CmdOptions { cmdHost :: !Text
+                             , cmdPort :: !Int
+                             , cmdUserName :: !Text
+                             , cmdPassword :: !Text
+                             } deriving stock (Show)
 
 versionOptionParser :: Parser (a -> a)
 versionOptionParser = infoOption (showVersion version)

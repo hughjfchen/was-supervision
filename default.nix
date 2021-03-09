@@ -41,7 +41,7 @@ rec {
   });
 
   was-supervision-exe = was-supervision.was-supervision.components.exes.was-supervision;
-  was-supervision-test = was-supervision.was-supervision.components.tests.was-supervision-test;
+  #was-supervision-test = was-supervision.was-supervision.components.tests.was-supervision-test;
 
   #hello = (pkgs.haskell-nix.hackage-package {
       #name = "hello";
