@@ -6,10 +6,12 @@ module AppError
 
 import As
 import Core.MyError
+import Network.HTTP.Client
 
 data AppError = MyError MyError
               | AppInvalidUrlError Text
-              | AppHttpError Text
+              | AppHttpError Request HttpExceptionContent
+              | AppJsonError Text
               deriving stock (Show, Typeable)
 
 instance As AppError MyError where

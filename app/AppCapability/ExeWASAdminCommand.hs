@@ -27,28 +27,30 @@ import qualified Network.HTTP.Client as HC
 
 instance MonadHttp AppM where
   handleHttpException (VanillaHttpException (HC.InvalidUrlException url reason)) = throwError $ AppInvalidUrlError $ toText (url <> reason)
-  handleHttpException (VanillaHttpException (HC.HttpExceptionRequest _ _)) = throwError $ AppHttpError "http client error"
-  handleHttpException (JsonHttpException errMsg) = throwError $ AppHttpError $ toText $ "Parsing JSON error: " <> errMsg
+  handleHttpException (VanillaHttpException (HC.HttpExceptionRequest errReq content)) = throwError $ AppHttpError errReq content
+  handleHttpException (JsonHttpException errMsg) = throwError $ AppJsonError $ toText $ "Parsing JSON error: " <> errMsg
+  getHttpConfig = pure $ defaultHttpConfig { httpConfigCheckResponse = \_ resp _ -> Nothing }
 
 instance AuthM AppM where
   welcome = do
     connInfo <- grab @ConnectionInfo
     mycj <- grab @MyCookieJar
+    myreq <- HC.parseRequest $ toString $ "http://" <> (ciHost connInfo) <> ":" <> show (ciPort connInfo)
     r <- req GET
-      (http (ciHost connInfo) /: (show $ ciPort connInfo) /: "/ibm/console")
+      (http (ciHost connInfo) /: "ibm" /: "console")
       NoReqBody
-      bsResponse
-      mempty
+      bsResponse $
+        port $ ciPort connInfo
     flip mergeCookieJar mycj $ responseCookieJar r
   login = do
     connInfo <- grab @ConnectionInfo
     mycj <- grab @MyCookieJar
     authInfo <- grab @AuthInfo
     r <- req POST
-      (http (ciHost connInfo) /: (show $ ciPort connInfo) /: "/ibm/console")
+      (http (ciHost connInfo) /: "ibm" /: "console")
       NoReqBody
-      bsResponse
-      mempty
+      bsResponse $
+      port $ ciPort connInfo
     flip mergeCookieJar mycj $ responseCookieJar r
   logout = do
     connInfo <- grab @ConnectionInfo
@@ -59,14 +61,24 @@ instance AuthM AppM where
       bsResponse
       mempty
     flip mergeCookieJar mycj $ responseCookieJar r
-
+-- >>> :i runReq
+-- runReq :: MonadIO m => HttpConfig -> Req a -> m a
+--   	-- Defined in ‘Network.HTTP.Req’
 instance ServerM AppM where
-  listServers = undefined
-  pickServer = undefined
+  listServers = pure [Server { cellName =""
+                     , cellID = ""
+                     , nodeName = ""
+                     , nodeID = ""
+                     , serverName = ""
+                     , serverID = ""
+                     }]
+  pickServer = pure
 
 instance JVMM AppM where
-  updateJvmGenericParameter = undefined
-  pickJvm = undefined
+  updateJvmGenericParameter jvm _ = pure $ Success jvm
+  pickJvm _ = pure $ JVM { jvmName = ""
+               , jvmID = ""
+               }
 
 -- >>> :browse Network.HTTP.Req
 -- (/:) :: Url scheme -> Text -> Url scheme
