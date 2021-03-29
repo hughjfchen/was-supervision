@@ -24,6 +24,9 @@ common common-options
   build-depends:       base-noprelude ^>= 4.13.0.0
                      , relude ^>= 0.7.0.0
                      , http-client
+                     , http-types
+                     , modern-uri
+                     , network-uri
                      , req ^>= 3.8.0
                      , aeson ^>= 1.5.4.1
                      , html-parse ^>= 0.2.0.2

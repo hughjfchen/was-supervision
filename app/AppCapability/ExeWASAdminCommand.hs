@@ -17,31 +17,44 @@ import AppError
 import Core.MyCookieJar (MyCookieJar(..), mergeCookieJar)
 import Core.ConnectionInfo (ConnectionInfo(..))
 import Core.AuthInfo(AuthInfo(..))
-
+import AppEnv (RedirectedUris)
 import Capability.ExeWASAdminCommand
 
 import AppM
 
 import Network.HTTP.Req
 import qualified Network.HTTP.Client as HC
+import Network.URI (uriToString)
 
 instance MonadHttp AppM where
   handleHttpException (VanillaHttpException (HC.InvalidUrlException url reason)) = throwError $ AppInvalidUrlError $ toText (url <> reason)
   handleHttpException (VanillaHttpException (HC.HttpExceptionRequest errReq content)) = throwError $ AppHttpError errReq content
   handleHttpException (JsonHttpException errMsg) = throwError $ AppJsonError $ toText $ "Parsing JSON error: " <> errMsg
-  getHttpConfig = pure $ defaultHttpConfig { httpConfigCheckResponse = \_ resp _ -> Nothing }
 
+reqWithRedirectHistories :: (MonadIO m, MonadReader env m, Has RedirectedUris env) => HC.Request -> HC.Manager -> m HC.CookieJar
+reqWithRedirectHistories theReq mng = do
+  envRU <- grab @RedirectedUris
+  his <- liftIO $ HC.responseOpenHistory theReq mng
+  let hsRedirects = HC.hrRedirects his
+      uris = flip fmap hsRedirects $ \(redReq, _) -> toText $ (uriToString id $ HC.getUri redReq) ""
+      cjsList = flip fmap hsRedirects $ \(_, redRes) -> HC.responseCookieJar redRes
+      cjs = foldr (<>) (HC.createCookieJar []) cjsList
+  atomicModifyIORef envRU $ \_ -> (uris, cjs)
+-- >>> :i fmap
+-- class Functor (f :: * -> *) where
+--   fmap :: (a -> b) -> f a -> f b
+--   ...
+--   	-- Defined in ‘GHC.Base’
 instance AuthM AppM where
   welcome = do
     connInfo <- grab @ConnectionInfo
     mycj <- grab @MyCookieJar
-    myreq <- HC.parseRequest $ toString $ "http://" <> (ciHost connInfo) <> ":" <> show (ciPort connInfo)
-    r <- req GET
+    r <- req' GET
       (http (ciHost connInfo) /: "ibm" /: "console")
       NoReqBody
-      bsResponse $
-        port $ ciPort connInfo
-    flip mergeCookieJar mycj $ responseCookieJar r
+      (port $ ciPort connInfo)
+      reqWithRedirectHistories
+    mergeCookieJar r mycj
   login = do
     connInfo <- grab @ConnectionInfo
     mycj <- grab @MyCookieJar
