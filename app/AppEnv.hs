@@ -14,9 +14,10 @@ import Core.AuthInfo
 import Core.MyCookieJar
 import Has
 
+import Text.URI (URI)
 import CmdLine (CmdOptions(..))
 
-type RedirectedUris = IORef [Text]
+type RedirectedUris = IORef [URI]
 
 data AppEnv = AppEnv {
   envConnectionInfo :: ConnectionInfo

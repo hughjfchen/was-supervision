@@ -25,6 +25,7 @@ import AppM
 import Network.HTTP.Req
 import qualified Network.HTTP.Client as HC
 import Network.URI (uriToString)
+import Text.URI (mkURI)
 
 instance MonadHttp AppM where
   handleHttpException (VanillaHttpException (HC.InvalidUrlException url reason)) = throwError $ AppInvalidUrlError $ toText (url <> reason)
@@ -39,12 +40,11 @@ reqWithRedirectHistories theReq mng = do
       uris = flip fmap hsRedirects $ \(redReq, _) -> toText $ (uriToString id $ HC.getUri redReq) ""
       cjsList = flip fmap hsRedirects $ \(_, redRes) -> HC.responseCookieJar redRes
       cjs = foldr (<>) (HC.createCookieJar []) cjsList
-  atomicModifyIORef envRU $ \_ -> (uris, cjs)
--- >>> :i fmap
--- class Functor (f :: * -> *) where
---   fmap :: (a -> b) -> f a -> f b
---   ...
---   	-- Defined in ‘GHC.Base’
+  mUris <- mapM (liftIO . mkURI) uris
+  atomicModifyIORef envRU $ \_ -> (mUris, cjs)
+-- >>> :hg Text -> URI
+-- unknown command ':hg'
+-- use :? for help.
 instance AuthM AppM where
   welcome = do
     connInfo <- grab @ConnectionInfo
