@@ -41,8 +41,8 @@ reqWithRedirectHistories theReq mng = do
       cjsList = flip fmap hsRedirects $ \(_, redRes) -> HC.responseCookieJar redRes
       cjs = foldr (<>) (HC.createCookieJar []) cjsList
   mUris <- mapM (liftIO . mkURI) uris
-  atomicModifyIORef envRU $ \_ -> (mUris, cjs)
--- >>> :hg Text -> URI
+  atomicModifyIORef envRU $ const (mUris, cjs)
+-- >>> :hg const
 -- unknown command ':hg'
 -- use :? for help.
 instance AuthM AppM where
